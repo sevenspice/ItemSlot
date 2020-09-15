@@ -514,6 +514,84 @@ window.$gameItemSlot = null;
         }
     }
 
+    /**
+     * アイテムセット用ボタンクラス
+     */
+    class SetButton {
+        constructor(_slotCount) {
+            this.width  = ImageManager.iconWidth;
+            this.height = ImageManager.iconHeight;
+            this.slotCount = _slotCount;
+
+            this.numButtoms  = [];
+            this.buttonsX    = [];
+            this.buttonsY    = [];
+            this.colors      = [];
+
+            this.buttonsX[0] = 10;
+            this.buttonsY[0] = 10;
+            this.colors[0]   = 0x000000;
+            for(let i = 1; i < this.slotCount; i++) {
+                this.numButtoms.push(null);
+                this.buttonsX[i] = this.buttonsX[(i - 1)] + Math.floor(this.width * 1.5);
+                this.buttonsY[i] = this.buttonsY[(i - 1)];
+                this.colors[i] = 0x000000;
+            }
+
+            this.fontStyle = new PIXI.TextStyle({
+                fill: 'white'
+                , fontWeight: 'bold'
+                , strokeThickness: 4
+                , miterLimit: 15
+                , align : 'center'
+                , fontSize: 24
+            });
+
+            this.numbers  = [];
+            this.numbersX = [];
+        }
+
+        show() {
+            for(let i = 0; i < this.slotCount; i++) {
+                if(this.numbers[i]    != null) SceneManager._scene.removeChild(this.numbers[i]);
+                if(this.numButtoms[i] != null) SceneManager._scene.removeChild(this.numButtoms[i]);
+            }
+
+            if(SceneManager._scene instanceof Scene_Item) {
+                let numbers   = [];
+                let numButton = [];
+
+                for(let i = 0; i < this.slotCount; i++) {
+                    // 枠生成
+                    numButton[i] = new PIXI.Graphics();
+                    numButton[i].lineStyle(0);
+                    numButton[i].beginFill(this.colors[i]);
+                    numButton[i].drawRoundedRect(this.buttonsX[i], this.buttonsY[i], this.width, this.height, 10);
+                    numButton[i].endFill();
+                    numButton[i].alpha = 0.5;
+
+                    if (numButton[i] != null) this.numButtoms[i] = SceneManager._scene.addChild(numButton[i]);
+                }
+
+                for( let i = 0; i < this.slotCount; i++) {
+                    numbers[i] = new PIXI.Text((i + 1), this.fontStyle);
+                    numbers[i].x = Math.floor(this.buttonsX[i] + ((this.width  - numbers[i].width)  / 2));
+                    numbers[i].y = Math.floor(this.buttonsY[i] + ((this.height - numbers[i].height) / 2));
+
+                    if (numbers[i] != null) this.numbers[i] = SceneManager._scene.addChild(numbers[i]);
+                }
+            }
+        }
+
+        update(index, color) {
+            const tempColor = this.color;
+            this.colors[index] = color;
+            // 描画
+            this.show();
+            this.colors[index] = tempColor;
+        }
+    }
+
     // ------------------------------------
     // 以下はプラグインコマンド実行処理群
     // ------------------------------------
@@ -521,7 +599,8 @@ window.$gameItemSlot = null;
      * アイテムスロットの呼び出し
      * ※ アイテムスロットを使用する場合は最低1回は呼び出しが必要
      */
-    let itemslot = null;
+    let itemslot  = null;
+    let setButton = null;
     PluginManager.registerCommand(pluginName, 'show', function() {
         if (!itemslot) {
             itemslot = new ItemSlot(
@@ -692,7 +771,7 @@ window.$gameItemSlot = null;
             }
         }
 
-        // マウス左クリック
+        // アイテムスロットマウス左クリック
         if (itemslot && TouchInput.isTriggered()) {
             const clickX = TouchInput.x;
             const clickY = TouchInput.y;
@@ -714,6 +793,27 @@ window.$gameItemSlot = null;
 
             // アイテムスロットを更新
             itemslot.update();
+        }
+
+        // アイテム画面上マウス左クリック
+        if (setButton && TouchInput.isTriggered()) {
+            const clickX = TouchInput.x;
+            const clickY = TouchInput.y;
+
+            // スロットボタンをクリックされたか判定する
+            for (let i = 0; i < slotCount; i++) {
+                if (
+                    (clickX >= setButton.buttonsX[i] && clickX <= (setButton.buttonsX[i] + setButton.width))
+                    && (clickY >= setButton.buttonsY[i] && clickY <= (setButton.buttonsY[i] + setButton.height))
+                ) {
+                    slotSet((i + 1));
+                    setButton.update(i, 0xFFFFFF);
+                }
+            }
+        } else if (setButton && TouchInput.isReleased()) {
+            for (let i = 0; i < slotCount; i++) {
+                setButton.update(i, setButton.colors[i]);
+            }
         }
     };
 
@@ -773,6 +873,17 @@ window.$gameItemSlot = null;
         if (itemslot) {
             if (itemslot.slotOn) itemslot.update();
         }
+    };
+
+    /**
+     * アイテム画面表示時の挙動を改造する
+     * スロットセット用の数値ボタンを描画する
+     */
+    const _Scene_Item_prototype_createItemWindow = Scene_Item.prototype.createItemWindow;
+    Scene_Item.prototype.createItemWindow = function() {
+        _Scene_Item_prototype_createItemWindow.apply(this, arguments);
+        if(!setButton) setButton = new SetButton(slotCount);
+        setButton.show();
     };
 
     /**
