@@ -198,10 +198,10 @@ window.$gameItemSlot = null;
 
     // プラグインで使用する関数群
     /**
-     * アイテムのアイコン画像を取得する巻数
+     * アイテムのアイコン画像を取得する関数。
      * @param {Bitmap}  iconset  アイコン一覧のスプライト
      * @param {integer} iconIdex アイコン番号
-     * @return {Bitmap} アイコンのビットマップを返却
+     * @return {Bitmap} アイコンのビットマップを返却。
      */
     const getIcon = (iconset, iconIdex) => {
         const iconX  = (iconIdex % 16) * ImageManager.iconWidth;
@@ -212,9 +212,9 @@ window.$gameItemSlot = null;
     };
 
     /**
-     * アイテムウィンドウからスロットにアイテムをセットする関数
+     * アイテムウィンドウからスロットにアイテムをセットする関数。
      * @param  {integer} inputKey キー番号
-     * @return {boolean} true or false
+     * @return {boolean} スロットへのセットに失敗したら false を返却。
      */
     const slotSet = (inputKey) => {
         if (SceneManager._scene instanceof Scene_Item) {
@@ -242,11 +242,13 @@ window.$gameItemSlot = null;
             }
 
             SceneManager._scene._itemWindow.refresh();
+
+            return true;
         }
     };
 
     /**
-     * アイテムスロットクラス
+     * アイテムスロットクラス。
      */
     class ItemSlot {
         constructor(
@@ -325,16 +327,17 @@ window.$gameItemSlot = null;
         }
 
         /**
-         * アイテムスロットを描画する
+         * アイテムスロットを描画する。
+         * @return {undefined}
          */
         show () {
-            for (let i = 0; i < this.slotCount; i++) {
-                this.slots[i].show();
-            }
+            for (let i = 0; i < this.slotCount; i++) this.slots[i].show();
+            this.slotOn = true;
         }
 
         /**
-         * アイテムスロットにセットされたアイテム情報とスロットの描画を更新する
+         * アイテムスロットにセットされたアイテム情報とスロットの描画を更新する。
+         * @return {undefined}
          */
         update () {
             // パーティーが所有しているアイテムと個数の一覧
@@ -368,15 +371,16 @@ window.$gameItemSlot = null;
                 }
             }
 
+            this.slotOn = true;
         }
 
         /**
-         * アイテムスロットの描画を消す
+         * アイテムスロットの描画を消す。
+         * @return {undefined}
          */
         hide () {
-            for (let i = 0; i < this.slotCount; i++) {
-                this.slots[i].hide();
-            }
+            for (let i = 0; i < this.slotCount; i++) this.slots[i].hide();
+            this.slotOn = false;
         }
     }
 
@@ -426,6 +430,10 @@ window.$gameItemSlot = null;
             this.open = false;
         }
 
+        /**
+         * スロットを描画する。
+         * @return {undefined}
+         */
         show() {
             if (!this.open) {
                 if (this.number  != null) SceneManager._scene.removeChild(this.number);
@@ -494,17 +502,27 @@ window.$gameItemSlot = null;
                     if (count   != null) this.count   = SceneManager._scene.addChild(count);
                     if (number  != null) this.number  = SceneManager._scene.addChild(number);
                     if (current != null) this.current = SceneManager._scene.addChild(current);
+
                     this.open = true;
                 }
             }
         }
 
+        /**
+         * スロットを更新する。
+         * @param {object} item 表示するアイテム
+         * @return {undefined}
+         */
         update(item) {
             this.open = false;
             this.item = item;
             this.show();
         }
 
+        /**
+         * スロットを非表示にする。
+         * @return {undefined}
+         */
         hide() {
             if (this.number  != null) SceneManager._scene.removeChild(this.number);
             if (this.slot    != null) SceneManager._scene.removeChild(this.slot);
@@ -515,7 +533,7 @@ window.$gameItemSlot = null;
     }
 
     /**
-     * アイテムセット用ボタンクラス
+     * アイテムセット用ボタンクラス。
      */
     class SetButton {
         constructor(_slotCount) {
@@ -551,12 +569,17 @@ window.$gameItemSlot = null;
             this.numbersX = [];
         }
 
+        /**
+         * 数値ボタンを表示する。
+         * @return {undefined}
+         */
         show() {
             for(let i = 0; i < this.slotCount; i++) {
                 if(this.numbers[i]    != null) SceneManager._scene.removeChild(this.numbers[i]);
                 if(this.numButtoms[i] != null) SceneManager._scene.removeChild(this.numButtoms[i]);
             }
 
+            // アイテム画面でのみ描画
             if(SceneManager._scene instanceof Scene_Item) {
                 let numbers   = [];
                 let numButton = [];
@@ -583,6 +606,12 @@ window.$gameItemSlot = null;
             }
         }
 
+        /**
+         * 数値ボタンを更新する。
+         * @param {integer} index 対象の数値ボタン
+         * @param {integer} color 変更する色
+         * @return {undefined}
+         */
         update(index, color) {
             const tempColor = this.color;
             this.colors[index] = color;
@@ -596,8 +625,8 @@ window.$gameItemSlot = null;
     // 以下はプラグインコマンド実行処理群
     // ------------------------------------
     /**
-     * アイテムスロットの呼び出し
-     * ※ アイテムスロットを使用する場合は最低1回は呼び出しが必要
+     * アイテムスロットの呼び出し。
+     * ※ アイテムスロットを使用する場合は最低1回は呼び出しが必要。
      */
     let itemslot  = null;
     let setButton = null;
@@ -626,9 +655,9 @@ window.$gameItemSlot = null;
             // 以下はツクールMZから呼び出すためのAPIの定義
             // -------------------------------------------
             /**
-             * 選択されているスロットにセットされているアイテムを返却する
+             * 選択されているスロットにセットされているアイテムを返却する。
              * @param {string} key アイテムから取得したい情報のキー名
-             * @return {object} 指定されたキーのアイテム情報
+             * @return {object} 指定されたキーのアイテム情報。
              */
             window.$gameItemSlot.currentItem = (key) => {
                 const slots = window.$gameItemSlot.slots;
@@ -643,19 +672,8 @@ window.$gameItemSlot = null;
             };
 
             /**
-             * 選択されているスロットにセットされているアイテムの数を返却する
-             */
-            window.$gameItemSlot.currentCount = () => {
-                const slots = window.$gameItemSlot.slots;
-                for(let i = 0; i < slots.length; i++) {
-                    if(slots[i].isClick) return slots[i].item.haveCount;
-                }
-
-                return 0;
-            };
-
-            /**
-             * 選択されているスロットにセットされているアイテムを通常使用する
+             * 選択されているスロットにセットされているアイテムを通常使用する。
+             * @return {boolean}} 使用に成功すれば ture を返却。
              */
             window.$gameItemSlot.defaultUse = () => {
                 const slots   = window.$gameItemSlot.slots;
@@ -715,26 +733,19 @@ window.$gameItemSlot = null;
 
                     // 入れ替え
                     $gameParty._items.slots = slots;
+                } else if (itemslot.slotCount > keys.length) {
+                    // 多い場合は入れ物を追加しておく
+                    for(let i = keys.length; i < itemslot.slotCount; i++) $gameParty._items.slots[(i+1)] = null;
                 }
 
                 // 描画を更新
                 itemslot.update();
             }
-
-            // ON
-            itemslot.slotOn = true;
-        } else {
-            // アイテムスロット描画
-            itemslot.show();
-
-            // ON
-            itemslot.slotOn = true;
         }
-
     });
 
     /**
-     * アイテムスロット更新
+     * アイテムスロット更新。
      */
     PluginManager.registerCommand(pluginName, 'update', function() {
         if (itemslot) {
@@ -743,12 +754,11 @@ window.$gameItemSlot = null;
     });
 
     /**
-     * アイテムスロット非表示
+     * アイテムスロット非表示。
      */
     PluginManager.registerCommand(pluginName, 'hide', function() {
         if (itemslot) {
             itemslot.hide();
-            itemslot.slotOn = false;
         }
     });
 
@@ -756,8 +766,8 @@ window.$gameItemSlot = null;
     // 以下はツクールMZにある機能を改造する処理群
     // -------------------------------------------
     /**
-     * シーン更新時の挙動を改造する
-     * 入力判定系の処理を追加する
+     * シーン更新時の挙動を改造する。
+     * 入力判定系の処理を追加する。
      */
     const _SceneManager_updateMain = SceneManager.updateMain;
     SceneManager.updateMain = function() {
@@ -771,8 +781,8 @@ window.$gameItemSlot = null;
             }
         }
 
-        // アイテムスロットマウス左クリック
-        if (itemslot && TouchInput.isTriggered()) {
+        // マップ上のアイテムスロットマウス左クリック
+        if (itemslot && SceneManager._scene instanceof Scene_Map && TouchInput.isTriggered()) {
             const clickX = TouchInput.x;
             const clickY = TouchInput.y;
 
@@ -781,8 +791,9 @@ window.$gameItemSlot = null;
                 if (
                     (clickX >= itemslot.slots[i].x && clickX <= (itemslot.slots[i].x + itemslot.slots[i].width))
                     && (clickY >= itemslot.slots[i].y && clickY <= (itemslot.slots[i].y + itemslot.slots[i].height))
+                    && itemslot.slotOn
                 ) {
-                    if (itemslot.slotOn) itemslot.slots[i].isClick = true;
+                    itemslot.slots[i].isClick = true;
 
                     // 選択されたスロット以外は false にする
                     for (let j = 0; j < slotCount; j++) {
@@ -795,12 +806,12 @@ window.$gameItemSlot = null;
             itemslot.update();
         }
 
-        // アイテム画面上マウス左クリック
-        if (setButton && TouchInput.isTriggered()) {
+        // アイテム画面上の数字ボタンマウス左クリック
+        if (setButton && SceneManager._scene instanceof Scene_Item && TouchInput.isTriggered()) {
             const clickX = TouchInput.x;
             const clickY = TouchInput.y;
 
-            // スロットボタンをクリックされたか判定する
+            // 数字ボタンをクリックされたか判定する
             for (let i = 0; i < slotCount; i++) {
                 if (
                     (clickX >= setButton.buttonsX[i] && clickX <= (setButton.buttonsX[i] + setButton.width))
@@ -810,7 +821,7 @@ window.$gameItemSlot = null;
                     setButton.update(i, 0xFFFFFF);
                 }
             }
-        } else if (setButton && TouchInput.isReleased()) {
+        } else if (setButton && SceneManager._scene instanceof Scene_Item && TouchInput.isReleased()) {
             for (let i = 0; i < slotCount; i++) {
                 setButton.update(i, setButton.colors[i]);
             }
@@ -818,8 +829,8 @@ window.$gameItemSlot = null;
     };
 
     /**
-     * マップをタッチされた際の挙動を改造する
-     * スロットをクリックされた場合は移動させない
+     * マップをタッチされた際の挙動を改造する。
+     * スロットをクリックされた場合は移動させない。
      */
     const _Scene_Map_prototype_onMapTouch = Scene_Map.prototype.onMapTouch;
     Scene_Map.prototype.onMapTouch = function() {
@@ -846,8 +857,8 @@ window.$gameItemSlot = null;
     };
 
     /**
-     * アイテムリストのアイテム描画を改造する
-     * セットしているスロットIDをアイテム名描画部分に追記する
+     * アイテムリストのアイテム描画を改造する。
+     * セットしているスロットIDをアイテム名描画部分に追記する。
      */
     const _Window_Base_prototype_drawItemName = Window_Base.prototype.drawItemName;
     Window_Base.prototype.drawItemName = function(item, x, y, width) {
@@ -864,8 +875,8 @@ window.$gameItemSlot = null;
     };
 
     /**
-     * マップシーン開始時の挙動を改造する
-     * マップシーン開始時にアイテムスロットも更新する
+     * マップシーン開始時の挙動を改造する。
+     * マップシーン開始時にアイテムスロットも更新する。
      */
     const _Scene_Map_prototype_start = Scene_Map.prototype.start;
     Scene_Map.prototype.start = function() {
@@ -876,8 +887,8 @@ window.$gameItemSlot = null;
     };
 
     /**
-     * アイテム画面表示時の挙動を改造する
-     * スロットセット用の数値ボタンを描画する
+     * アイテム画面表示時の挙動を改造する。
+     * スロットセット用の数値ボタンを描画する。
      */
     const _Scene_Item_prototype_createItemWindow = Scene_Item.prototype.createItemWindow;
     Scene_Item.prototype.createItemWindow = function() {
@@ -887,8 +898,8 @@ window.$gameItemSlot = null;
     };
 
     /**
-     * メッセージウィンドウ表示時の挙動を改造する
-     * メッセージウィンドウ表示時はアイテムスロットは表示しない
+     * メッセージウィンドウ表示時の挙動を改造する。
+     * メッセージウィンドウ表示時はアイテムスロットは表示しない。
      */
     const _Window_Message_prototype_startMessage = Window_Message.prototype.startMessage;
     Window_Message.prototype.startMessage = function() {
@@ -899,8 +910,8 @@ window.$gameItemSlot = null;
     };
 
     /**
-     * メッセージウィンドウ終了時の挙動を改造する
-     * メッセージウィンドウ終了時はアイテムスロットは表示する
+     * メッセージウィンドウ終了時の挙動を改造する。
+     * メッセージウィンドウ終了時はアイテムスロットは表示する。
      */
     const _Window_Message_prototype_terminateMessage = Window_Message.prototype.terminateMessage;
     Window_Message.prototype.terminateMessage = function() {
