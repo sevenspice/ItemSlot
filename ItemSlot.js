@@ -1,9 +1,9 @@
 'use strict';
-/* global PluginManager */
-/* global ImageManager  */
 /* global Input  */
 /* global PIXI   */
 /* global Bitmap */
+/* global PluginManager  */
+/* global ImageManager   */
 /* global SceneManager   */
 /* global Scene_Item     */
 /* global $gameParty     */
@@ -13,8 +13,6 @@
 /* global TouchInput     */
 /* global Window_Base    */
 /* global Window_Message */
-/* global Game_Action  */
-/* global SoundManager */
 //=============================================================================
 // ItemSlot.js
 //=============================================================================
@@ -25,12 +23,74 @@
  * @plugindesc Itemslot plugin.
  * @author @BananaPepperTK
  *
- * @help This is a plugin to draw a circular light.
- * 
+ * @help Displays item slots on the map.
+ *
  * For more information
  *   https://github.com/sevenspice/ItemSlot
  *
+ * @param BackgroundColor
+ * @desc Slot Background Color.
+ * @default 0x000000
  *
+ * @param SlotCount
+ * @desc Number of slots. min:1 max:9
+ * @default 5
+ *
+ * @param SlotMarginLeft
+ * @desc Left margin between slots.
+ * @default 10
+ *
+ * @param SlotMarginRight
+ * @desc Right margin between slots.
+ * @default 10
+ *
+ * @param SlotMarginTop
+ * @desc Top margin on the slot.
+ * @default 10
+ *
+ * @param SlotMarginBottom
+ * @desc Bottom margin of the slot.
+ * @default 10
+ *
+ * @param VerticalAlign
+ * @desc Item slot placemen. BOTTOM or TOP
+ * @default BOTTOM
+ *
+ * @param SlotFontSize
+ * @desc The font size of the numbers to be drawn in the slot.
+ * @default 10
+ *
+ * @param ItemSlotFontSize
+ * @desc Font size of the numbers to be drawn in the item list.
+ * @default 15
+ *
+ * @param LineWeight
+ * @desc Selection Box Line Thickness.
+ * @default 2
+ *
+ * @param LineColor
+ * @desc Selection Box Color.
+ * @default 0xF0E68C
+ *
+ * @param LineMargin
+ * @desc The top, bottom, left and right margins of the selection frame.
+ * @default 8
+ *
+ * @command create
+ * @text 生成
+ * @desc Generates an item slot.
+ *
+ * @command show
+ * @text 表示
+ * @desc Displays the item slot.
+ *
+ * @command update
+ * @text 更新
+ * @desc Updates the item slot with the items you currently own.
+ *
+ * @command hide
+ * @text 非表示
+ * @desc Hide the item slot.
  */
 
 /*:ja
@@ -44,7 +104,7 @@
  *   https://github.com/sevenspice/ItemSlot
  *
  * @param BackgroundColor
- * @desc スロットの背景色
+ * @desc スロットの背景色。
  * @default 0x000000
  *
  * @param SlotCount
@@ -52,19 +112,19 @@
  * @default 5
  *
  * @param SlotMarginLeft
- * @desc スロット間の左マージン
+ * @desc スロット間の左マージン。
  * @default 10
  *
  * @param SlotMarginRight
- * @desc スロット間の右マージン
+ * @desc スロット間の右マージン。
  * @default 10
  *
  * @param SlotMarginTop
- * @desc スロットの上マージン
+ * @desc スロットの上マージン。
  * @default 10
  *
  * @param SlotMarginBottom
- * @desc スロットの下マージン
+ * @desc スロットの下マージン。
  * @default 10
  *
  * @param VerticalAlign
@@ -72,24 +132,28 @@
  * @default BOTTOM
  *
  * @param SlotFontSize
- * @desc スロットに描画される数字のフォントサイズ
+ * @desc スロットに描画される数字のフォントサイズ。
  * @default 10
  *
  * @param ItemSlotFontSize
- * @desc スロットに描画される数字のフォントサイズ
+ * @desc アイテム一覧に描画される数字のフォントサイズ。
  * @default 15
  *
  * @param LineWeight
- * @desc 選択枠の線の太さ
+ * @desc 選択枠の線の太さ。
  * @default 2
  *
  * @param LineColor
- * @desc 選択枠の色
+ * @desc 選択枠の色。
  * @default 0xF0E68C
  *
  * @param LineMargin
- * @desc 選択枠の上下左右マージン
+ * @desc 選択枠の上下左右マージン。
  * @default 8
+ *
+ * @command create
+ * @text 生成
+ * @desc アイテムスロットを生成します。
  *
  * @command show
  * @text 表示
@@ -112,6 +176,7 @@ window.$gameItemSlot = null;
 ( function() {
     const pluginName = 'ItemSlot';
     const iconSet    = ImageManager.loadSystem('IconSet');
+    let itemSlotEnable = false;
 
     Input.keyMapper['49'] = '1';
     Input.keyMapper['50'] = '2';
@@ -267,7 +332,6 @@ window.$gameItemSlot = null;
             , _lineColor
             , _lineMargin
         ) {
-            this.slotOn           = false;
             this.slotCount        = _slotCount;
             this.slotMarginLeft   = _slotMarginLeft;
             this.slotMarginRight  = _slotMarginRight;
@@ -332,7 +396,6 @@ window.$gameItemSlot = null;
          */
         show () {
             for (let i = 0; i < this.slotCount; i++) this.slots[i].show();
-            this.slotOn = true;
         }
 
         /**
@@ -370,17 +433,14 @@ window.$gameItemSlot = null;
                     this.slots[(keys[i] - 1)].update(null);
                 }
             }
-
-            this.slotOn = true;
         }
 
         /**
-         * アイテムスロットの描画を消す。
+         * アイテムスロットを消す。
          * @return {undefined}
          */
         hide () {
             for (let i = 0; i < this.slotCount; i++) this.slots[i].hide();
-            this.slotOn = false;
         }
     }
 
@@ -426,8 +486,6 @@ window.$gameItemSlot = null;
             this.slot      = null;
             this.icon      = null;
             this.count     = null;
-
-            this.open = false;
         }
 
         /**
@@ -435,76 +493,72 @@ window.$gameItemSlot = null;
          * @return {undefined}
          */
         show() {
-            if (!this.open) {
-                if (this.number  != null) SceneManager._scene.removeChild(this.number);
-                if (this.slot    != null) SceneManager._scene.removeChild(this.slot);
-                if (this.icon    != null) SceneManager._scene.removeChild(this.icon);
-                if (this.current != null) SceneManager._scene.removeChild(this.current);
-                if (this.count   != null) SceneManager._scene.removeChild(this.count);
+            if (this.number  != null) SceneManager._scene.removeChild(this.number);
+            if (this.slot    != null) SceneManager._scene.removeChild(this.slot);
+            if (this.icon    != null) SceneManager._scene.removeChild(this.icon);
+            if (this.current != null) SceneManager._scene.removeChild(this.current);
+            if (this.count   != null) SceneManager._scene.removeChild(this.count);
 
-                if (SceneManager._scene instanceof Scene_Map) {
-                    let slot    = null;
-                    let icon    = null;
-                    let count   = null;
-                    let number  = null;
-                    let current = null;
+            if (SceneManager._scene instanceof Scene_Map) {
+                let slot    = null;
+                let icon    = null;
+                let count   = null;
+                let number  = null;
+                let current = null;
 
-                    // 枠生成
-                    slot = new PIXI.Graphics();
-                    slot.lineStyle(0);
-                    slot.beginFill(this.color);
-                    slot.drawRoundedRect(this.x, this.y, this.width, this.height, this.radius);
-                    slot.endFill();
-                    slot.alpha = this.alpha;
+                // 枠生成
+                slot = new PIXI.Graphics();
+                slot.lineStyle(0);
+                slot.beginFill(this.color);
+                slot.drawRoundedRect(this.x, this.y, this.width, this.height, this.radius);
+                slot.endFill();
+                slot.alpha = this.alpha;
 
-                    // 選択状態生成
-                    if(this.isClick) {
-                        current = new PIXI.Graphics();
-                        current.lineStyle(this.lineWeight, this.lineColor);
-                        current.drawRoundedRect(
-                            Math.floor(this.x - this.lineMargin)
-                            , Math.floor(this.y - this.lineMargin)
-                            , Math.floor(this.width  + (this.lineMargin * 2))
-                            , Math.floor(this.height + (this.lineMargin * 2))
-                            , this.radius
-                        );
-                    }
-
-                    // キー番号生成
-                    number = new PIXI.Text(this.id, this.fontStyle);
-                    number.x = Math.floor((this.x + ((this.width - number.width) / 2)));
-                    number.y = Math.floor((this.y - (number.height/ 2)));
-
-                    if (this.item) {
-                        const iconIndex = this.item.iconIndex;
-                        let   haveCount = this.item.haveCount;
-                        if (haveCount > 99) {
-                            haveCount = 99;
-                        }
-
-                        // 表示するアイコン生成
-                        icon = new Sprite();
-                        icon.bitmap = getIcon(this.iconSet, iconIndex);
-                        const iconX = this.x + Math.floor((this.width  - ImageManager.iconWidth)  / 2);
-                        const iconY = this.y + Math.floor((this.height - ImageManager.iconHeight) / 2);
-                        icon.x = iconX;
-                        icon.y = iconY;
-                        icon.alpha = 1.0;
-
-                        // 所持数
-                        count = new PIXI.Text(haveCount, this.fontStyle);
-                        count.x = Math.floor((this.x + this.width)  - count.width  - 5);
-                        count.y = Math.floor((this.y + this.height) - count.height - 5);
-                    }
-
-                    if (slot    != null) this.slot    = SceneManager._scene.addChild(slot);
-                    if (icon    != null) this.icon    = SceneManager._scene.addChild(icon);
-                    if (count   != null) this.count   = SceneManager._scene.addChild(count);
-                    if (number  != null) this.number  = SceneManager._scene.addChild(number);
-                    if (current != null) this.current = SceneManager._scene.addChild(current);
-
-                    this.open = true;
+                // 選択状態生成
+                if(this.isClick) {
+                    current = new PIXI.Graphics();
+                    current.lineStyle(this.lineWeight, this.lineColor);
+                    current.drawRoundedRect(
+                        Math.floor(this.x - this.lineMargin)
+                        , Math.floor(this.y - this.lineMargin)
+                        , Math.floor(this.width  + (this.lineMargin * 2))
+                        , Math.floor(this.height + (this.lineMargin * 2))
+                        , this.radius
+                    );
                 }
+
+                // キー番号生成
+                number = new PIXI.Text(this.id, this.fontStyle);
+                number.x = Math.floor((this.x + ((this.width - number.width) / 2)));
+                number.y = Math.floor((this.y - (number.height/ 2)));
+
+                if (this.item) {
+                    const iconIndex = this.item.iconIndex;
+                    let   haveCount = this.item.haveCount;
+                    if (haveCount > 99) {
+                        haveCount = 99;
+                    }
+
+                    // 表示するアイコン生成
+                    icon = new Sprite();
+                    icon.bitmap = getIcon(this.iconSet, iconIndex);
+                    const iconX = this.x + Math.floor((this.width  - ImageManager.iconWidth)  / 2);
+                    const iconY = this.y + Math.floor((this.height - ImageManager.iconHeight) / 2);
+                    icon.x = iconX;
+                    icon.y = iconY;
+                    icon.alpha = 1.0;
+
+                    // 所持数
+                    count = new PIXI.Text(haveCount, this.fontStyle);
+                    count.x = Math.floor((this.x + this.width)  - count.width  - 5);
+                    count.y = Math.floor((this.y + this.height) - count.height - 5);
+                }
+
+                if (slot    != null) this.slot    = SceneManager._scene.addChild(slot);
+                if (icon    != null) this.icon    = SceneManager._scene.addChild(icon);
+                if (count   != null) this.count   = SceneManager._scene.addChild(count);
+                if (number  != null) this.number  = SceneManager._scene.addChild(number);
+                if (current != null) this.current = SceneManager._scene.addChild(current);
             }
         }
 
@@ -514,7 +568,6 @@ window.$gameItemSlot = null;
          * @return {undefined}
          */
         update(item) {
-            this.open = false;
             this.item = item;
             this.show();
         }
@@ -630,7 +683,7 @@ window.$gameItemSlot = null;
      */
     let itemslot  = null;
     let setButton = null;
-    PluginManager.registerCommand(pluginName, 'show', function() {
+    PluginManager.registerCommand(pluginName, 'create', function() {
         if (!itemslot) {
             itemslot = new ItemSlot(
                 slotCount
@@ -664,54 +717,13 @@ window.$gameItemSlot = null;
                 let item  = null;
 
                 for(let i = 0; i < slots.length; i++) {
-                    if(slots[i].isClick) item = slots[i].item;
+                    if (slots[i].isClick) item = slots[i].item;
                 }
 
-                if(item) return item[key];
-                else '';
-            };
+                if (!itemSlotEnable) return '';
+                if (!item) return '';
 
-            /**
-             * 選択されているスロットにセットされているアイテムを通常使用する。
-             * @return {boolean}} 使用に成功すれば ture を返却。
-             */
-            window.$gameItemSlot.defaultUse = () => {
-                const slots   = window.$gameItemSlot.slots;
-                const members = $gameParty.movableMembers();
-                const actor   = members.shift(); // 先頭のメンバー
-
-                let item = null;
-                for(let i = 0; i < slots.length; i++) {
-                    if(slots[i].isClick) item = slots[i].item;
-                }
-
-                if(!item) return false;
-
-                // 先頭のメンバーがアイテムを使用する
-                SoundManager.playUseItem();
-                actor.useItem(item);
-
-                const action = new Game_Action(actor);
-                action.setItemObject(item);
-
-                let numRepeats = action.numRepeats();
-                if(!numRepeats) numRepeats = 1;
-
-                // 対象はパーティ全体
-                // ※ アイテムスロットの用途としてはプレイヤーは数は常に1人を想定している
-                for (const target of $gameParty.members()) {
-                    for (let i = 0; i < numRepeats; i++) {
-                        action.apply(target);
-                    }
-                }
-
-                // アイテム情報を更新
-                action.applyGlobal();
-
-                // 描画更新
-                window.$gameItemSlot.update();
-
-                return true;
+                return item[key];
             };
 
             // プレイヤーの所有するアイテム一覧に, 表示する対象スロットIDの一覧表となる入れ物を用意しておく
@@ -741,25 +753,32 @@ window.$gameItemSlot = null;
                 // 描画を更新
                 itemslot.update();
             }
+            itemSlotEnable = true;
         }
+    });
+
+    /**
+     * アイテムスロット表示。
+     */
+    PluginManager.registerCommand(pluginName, 'show', function() {
+        if (itemslot) itemslot.show();
+        itemSlotEnable = true;
     });
 
     /**
      * アイテムスロット更新。
      */
     PluginManager.registerCommand(pluginName, 'update', function() {
-        if (itemslot) {
-            itemslot.update();
-        }
+        if (itemslot) itemslot.update();
+        itemSlotEnable = true;
     });
 
     /**
      * アイテムスロット非表示。
      */
     PluginManager.registerCommand(pluginName, 'hide', function() {
-        if (itemslot) {
-            itemslot.hide();
-        }
+        if (itemslot) itemslot.hide();
+        itemSlotEnable = false;
     });
 
     // -------------------------------------------
@@ -791,7 +810,7 @@ window.$gameItemSlot = null;
                 if (
                     (clickX >= itemslot.slots[i].x && clickX <= (itemslot.slots[i].x + itemslot.slots[i].width))
                     && (clickY >= itemslot.slots[i].y && clickY <= (itemslot.slots[i].y + itemslot.slots[i].height))
-                    && itemslot.slotOn
+                    && itemSlotEnable
                 ) {
                     itemslot.slots[i].isClick = true;
 
@@ -803,7 +822,7 @@ window.$gameItemSlot = null;
             }
 
             // アイテムスロットを更新
-            itemslot.update();
+            if(itemSlotEnable) itemslot.update();
         }
 
         // アイテム画面上の数字ボタンマウス左クリック
@@ -816,6 +835,7 @@ window.$gameItemSlot = null;
                 if (
                     (clickX >= setButton.buttonsX[i] && clickX <= (setButton.buttonsX[i] + setButton.width))
                     && (clickY >= setButton.buttonsY[i] && clickY <= (setButton.buttonsY[i] + setButton.height))
+                    && itemSlotEnable
                 ) {
                     slotSet((i + 1));
                     setButton.update(i, 0xFFFFFF);
@@ -843,7 +863,7 @@ window.$gameItemSlot = null;
                 if (
                     (clickX >= itemslot.slots[i].x && clickX <= (itemslot.slots[i].x + itemslot.slots[i].width))
                     && (clickY >= itemslot.slots[i].y && clickY <= (itemslot.slots[i].y + itemslot.slots[i].height))
-                    && itemslot.slotOn
+                    && itemSlotEnable
                 ) {
                     canMove = false;
                 }
@@ -881,9 +901,7 @@ window.$gameItemSlot = null;
     const _Scene_Map_prototype_start = Scene_Map.prototype.start;
     Scene_Map.prototype.start = function() {
         _Scene_Map_prototype_start.apply(this, arguments);
-        if (itemslot) {
-            if (itemslot.slotOn) itemslot.update();
-        }
+        if (itemSlotEnable && itemslot) itemslot.update();
     };
 
     /**
@@ -904,8 +922,11 @@ window.$gameItemSlot = null;
     const _Window_Message_prototype_startMessage = Window_Message.prototype.startMessage;
     Window_Message.prototype.startMessage = function() {
         _Window_Message_prototype_startMessage.apply(this, arguments);
-        if (SceneManager._scene instanceof Scene_Map && itemslot) {
-            itemslot.hide();
+        if (
+            SceneManager._scene instanceof Scene_Map
+            && itemSlotEnable
+        ) {
+            if (itemslot) itemslot.hide();
         }
     };
 
@@ -916,8 +937,11 @@ window.$gameItemSlot = null;
     const _Window_Message_prototype_terminateMessage = Window_Message.prototype.terminateMessage;
     Window_Message.prototype.terminateMessage = function() {
         _Window_Message_prototype_terminateMessage.apply(this, arguments);
-        if (SceneManager._scene instanceof Scene_Map && itemslot) {
-            itemslot.update();
+        if (
+            SceneManager._scene instanceof Scene_Map
+            && itemSlotEnable
+        ) {
+            if (itemslot) itemslot.update();
         }
     };
 })();
