@@ -77,19 +77,19 @@
  * @default 8
  *
  * @command create
- * @text 生成
+ * @text create
  * @desc Generates an item slot.
  *
  * @command show
- * @text 表示
+ * @text show
  * @desc Displays the item slot.
  *
  * @command update
- * @text 更新
+ * @text update
  * @desc Updates the item slot with the items you currently own.
  *
  * @command hide
- * @text 非表示
+ * @text hide
  * @desc Hide the item slot.
  */
 
