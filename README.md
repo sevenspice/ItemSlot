@@ -17,6 +17,11 @@ RPGツクールMZ用のプラグイン。
 
 # 仕様
 
+* プラグイン自体の仕様は所有しているアイテムをマップに表示すること。
+* このプラグインで選択されたアイテムを使用する場合は、独自に使用効果をエディタ等で実装する必要がある。
+    * データベースのみだとマップ画面でアイテムを使用することがMZ仕様で想定されていないため。
+    * 実装例は[アイテム使用の実装例](#アイテム使用の実装例)を参考にすること。
+
 * プラグインが実行されると同時に以下のキーのインプット判定が有効になる。競合に注意すること。
 ```
 Input.keyMapper['49'] = '1';
@@ -30,9 +35,6 @@ Input.keyMapper['56'] = '8';
 Input.keyMapper['57'] = '9';
 ```
 
-* このプラグインで選択されたアイテムを使用する場合は、独自に使用効果をエディタ等で実装する必要がある。
-    * 実装例は[アイテム使用の実装例](#アイテム使用の実装例)を参考にすること。
-
 * 本プラグインを導入すると自動的にメニュー画面におけるアイテム画面での挙動がカスタマイズされる。
     * アイテム画面表示中に画面上部にスロットへアイテムを設定するためのボタンを表示する。
     * アイテム選択中にキーボードの[1～9]のいずれかのキーまたはボタンを押すと対応するスロットへアイテムをセットする。
@@ -44,17 +46,18 @@ window.$gameItemSlot.currentItem(key)
 * アイテムスロットで選択中のアイテム情報を取得する。
 * `key`には取得したいアイテムのキーを指定する。使用例は[アイテム使用の実装例](#アイテム使用の実装例)にある。
 
+
 # アイテム使用の実装例
 
 アイテムスロットでアイテムを使用するための実装例を以下に示す。
 
-以下３つのコモンイベントを実装する。
+以下の様なコモンイベントを実装する。※ 考え方の１つです。
 
 <img src="https://storage.googleapis.com/aurelia-github/rpgmaker-mz/itemslot/common_event1.png?raw=true">
 
 <img src="https://storage.googleapis.com/aurelia-github/rpgmaker-mz/itemslot/common_event2.png?raw=true">
 
-<img src="https://storage.googleapis.com/aurelia-github/rpgmaker-mz/itemslot/common_event3.png?raw=true">
+※ データベース側はアイテムを使用できる状態のみに設定しておく。
 
 「アイテム共通処理」のコモンイベントを何らかのタイミングで呼び出すことでアイテムスロットで選択中のアイテムを使用できる。
 
@@ -62,6 +65,7 @@ window.$gameItemSlot.currentItem(key)
 
 スロットに設定されたアイテムはセーブデータで保持されるため、何らかの方法でロードを判定してプラグインを呼び出せばセーブ前の状態を再現できる。以下にその実装例を示す。
 
+※ 考え方の１つです。
 <img src="https://storage.googleapis.com/aurelia-github/rpgmaker-mz/itemslot/initialize_example.png?raw=true">
 
 プラグインが呼び出された場合、`window.$gameItemSlot`にアイテムスロットの情報が格納される。
