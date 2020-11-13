@@ -406,31 +406,45 @@ window.$gameItemSlot = null;
             // パーティーが所有しているアイテムと個数の一覧
             const partyItems = $gameParty._items;
 
-            // パーティーが所有しているアイテム一覧からスロットに設定されたアイテム一覧を取り出す
-            let slotItems = $gameParty._items.slots;
-            let keys      = Object.keys(slotItems);
+            if(typeof $gameParty._items.slots != 'object') {
+                // スロットの情報がない場合
+                $gameParty._items.slots = {};
+                for(let i = 0; i < this.slotCount; i++) $gameParty._items.slots[(i+1)] = null;
 
-            // まず所有しているアイテムがなくなっている場合を確認する
-            for (let i = 0; i < keys.length; i++) {
-                if (slotItems[keys[i]]) {
-                    if (!$gameParty._items[slotItems[keys[i]].id]) {
-                        // アイテムをすでに所有していない場合はスロットから外す
-                        $gameParty._items.slots[keys[i]] = null;
+                // 描画
+                for (let i = 0; i < this.slotCount; i++) {
+                    this.slots[i].isClick = false;
+                    this.slots[i].update(null);
+                }
+            } else {
+                // スロット情報がある場合
+                // パーティーが所有しているアイテム一覧からスロットに設定されたアイテム一覧を取り出す
+                let slotItems = $gameParty._items.slots;
+                let keys = [];
+                keys = Object.keys(slotItems);
+
+                // まず所有しているアイテムがなくなっている場合を確認する
+                for (let i = 0; i < keys.length; i++) {
+                    if (slotItems[keys[i]]) {
+                        if (!$gameParty._items[slotItems[keys[i]].id]) {
+                            // アイテムをすでに所有していない場合はスロットから外す
+                            $gameParty._items.slots[keys[i]] = null;
+                        }
                     }
                 }
-            }
 
-            // 更新
-            slotItems = $gameParty._items.slots;
-            keys      = Object.keys(slotItems);
+                // 更新
+                slotItems = $gameParty._items.slots;
+                keys = Object.keys(slotItems);
 
-            // スロットにアイテムを渡して描画
-            for (let i = 0; i < keys.length; i++) {
-                if (slotItems[keys[i]]) {
-                    slotItems[keys[i]].haveCount = partyItems[slotItems[keys[i]].id]; // アイテムに所持数情報を追加・更新する
-                    this.slots[(keys[i] - 1)].update(slotItems[keys[i]]);
-                } else {
-                    this.slots[(keys[i] - 1)].update(null);
+                // スロットにアイテムを渡して描画
+                for (let i = 0; i < keys.length; i++) {
+                    if (slotItems[keys[i]]) {
+                        slotItems[keys[i]].haveCount = partyItems[slotItems[keys[i]].id]; // アイテムに所持数情報を追加・更新する
+                        this.slots[(keys[i] - 1)].update(slotItems[keys[i]]);
+                    } else {
+                        this.slots[(keys[i] - 1)].update(null);
+                    }
                 }
             }
         }
@@ -726,14 +740,7 @@ window.$gameItemSlot = null;
                 return item[key];
             };
 
-            // プレイヤーの所有するアイテム一覧に, 表示する対象スロットIDの一覧表となる入れ物を用意しておく
-            if(typeof $gameParty._items.slots != 'object') {
-                $gameParty._items.slots = {};
-                for(let i = 0; i < slotCount; i++) $gameParty._items.slots[(i+1)] = null;
-
-                // アイテムスロット描画
-                itemslot.show();
-            } else {
+            if(typeof $gameParty._items.slots == 'object') {
                 // セーブデータ対策
                 // 過去のセーブデータよりスロット数を少ない仕様になった場合に既にセットされているアイテムを切り捨てる
                 const keys = Object.keys($gameParty._items.slots);
@@ -753,6 +760,7 @@ window.$gameItemSlot = null;
                 // 描画を更新
                 itemslot.update();
             }
+
             itemSlotEnable = true;
         }
     });
