@@ -891,8 +891,9 @@ window.$gameItemSlot = null;
     const _Window_Base_prototype_drawItemName = Window_Base.prototype.drawItemName;
     Window_Base.prototype.drawItemName = function(item, x, y, width) {
         _Window_Base_prototype_drawItemName.apply(this, arguments);
-        const keys = Object.keys($gameParty._items.slots);
+        if(!item) return ;
 
+        const keys = Object.keys($gameParty._items.slots);
         for (let i = 0; i < keys.length; i++) {
             if ($gameParty._items.slots[keys[i]] && $gameParty._items.slots[keys[i]].id == item.id) {
                 this.contents.fontSize = itemSlotFontSize;
