@@ -277,15 +277,27 @@ window.$gameItemSlot = null;
     };
 
     /**
+     * オブジェクトがMZでのアイテムであるかどうかを判定する関数。
+     * @param  {object} item アイテムオブジェクト
+     * @return {boolean} アイテムオブジェクトならばtrueを返却。
+     */
+    const isItem = (item) => {
+        if (item) {
+            return ('itypeId' in item);
+        }
+        return false;
+    };
+
+    /**
      * アイテムウィンドウからスロットにアイテムをセットする関数。
      * @param  {integer} inputKey キー番号
-     * @return {boolean} スロットへのセットに失敗したら false を返却。
+     * @return {boolean} スロットへのセットに失敗したらfalseを返却。
      */
     const slotSet = (inputKey) => {
         if (SceneManager._scene instanceof Scene_Item) {
             // アイテムを取得する
             const item = SceneManager._scene._itemWindow.itemAt(SceneManager._scene._itemWindow.index());
-            if (!item) return false;
+            if (!isItem(item)) return false;
 
             // プレイヤーの所有しているアイテムに選択されキーを設定する
             if (typeof $gameParty._items.slots != 'object') return false;
@@ -891,8 +903,9 @@ window.$gameItemSlot = null;
     const _Window_Base_prototype_drawItemName = Window_Base.prototype.drawItemName;
     Window_Base.prototype.drawItemName = function(item, x, y, width) {
         _Window_Base_prototype_drawItemName.apply(this, arguments);
-        const keys = Object.keys($gameParty._items.slots);
+        if(!isItem(item)) return ;
 
+        const keys = Object.keys($gameParty._items.slots);
         for (let i = 0; i < keys.length; i++) {
             if ($gameParty._items.slots[keys[i]] && $gameParty._items.slots[keys[i]].id == item.id) {
                 this.contents.fontSize = itemSlotFontSize;
