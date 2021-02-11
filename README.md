@@ -7,7 +7,7 @@ RPGツクールMZ用のプラグイン。
 # プロジェクトへのインポート方法
 
 1. プラグインをダウンロードする。以下のリンクをクリックすると最新のバイナリを落とせる。
-    * [ItemSlot-1.0.2](https://storage.googleapis.com/aurelia-github/rpgmaker-mz/itemslot/ItemSlot-1.0.2.zip)
+    * [ItemSlot-1.0.3](https://github-storage.redspice.me/rpgmaker-mz/itemslot/ItemSlot-1.0.3.zip)
 
 3. ダウンロードしたZIPファイルを展開する。
 
@@ -20,7 +20,7 @@ RPGツクールMZ用のプラグイン。
 * 所有しているアイテムをマップに表示する。
 * マップに表示するアイテムはアイテムメニュー画面で設定することができる。
     * このプラグインで選択されたアイテムを使用する場合は、独自に使用効果をエディタ等で実装する必要がある。
-        * データベースのみだとマップ画面でアイテムを使用することがMZの仕様で想定されていないため。
+        * データベースのみだとマップ画面でアイテムを使用することが仕様として想定されていないため。
         * 実装例は[アイテム使用の実装例](#アイテム使用の実装例)を参考にすること。
 
 プラグインが実行されると同時に以下のキーのインプット判定が有効になる。競合に注意すること。
@@ -101,7 +101,7 @@ window.$gameItemSlot.currentItem(key)
 
 プラグインが動作しているデモを以下のGIFで示す。
 
-<img src="https://storage.googleapis.com/aurelia-github/rpgmaker-mz/itemslot/itemslot.gif?raw=true">
+<img src="https://github-storage.redspice.me/rpgmaker-mz/itemslot/itemslot.gif?raw=true">
 
 # 備考
 
