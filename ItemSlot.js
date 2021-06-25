@@ -21,7 +21,7 @@
 /*:
  * @target MZ
  * @plugindesc Itemslot plugin.
- * @author @BananaPepperTK
+ * @author BananaPepperTK
  *
  * @help Displays item slots on the map.
  *
@@ -96,7 +96,7 @@
 /*:ja
  * @target MZ
  * @plugindesc アイテムスロットプラグイン。
- * @author @BananaPepperTK
+ * @author BananaPepperTK
  *
  * @help マップ上にアイテムスロットを表示します。
  *
