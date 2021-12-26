@@ -17,6 +17,7 @@
   "devDependencies": {
     "eslint": "^7.29.0",
     "gulp": "^4.0.2",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "caniuse-lite": "^1.0.30001292"
   }
 }

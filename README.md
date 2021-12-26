@@ -7,7 +7,7 @@ RPGツクールMZ用のプラグイン。
 # プロジェクトへのインポート方法
 
 1. プラグインをダウンロードする。以下のリンクをクリックすると最新のバイナリを落とせる。
-    * [ItemSlot-1.0.4](https://github-storage.redspice.me/rpgmaker-mz/itemslot/ItemSlot-1.0.4.zip)
+    * [ItemSlot-1.1.0](https://github-storage.redspice.me/rpgmaker-mz/itemslot/ItemSlot-1.1.0.zip)
 
 3. ダウンロードしたZIPファイルを展開する。
 

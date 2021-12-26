@@ -7,12 +7,14 @@
 /* global SceneManager   */
 /* global Scene_Item     */
 /* global $gameParty     */
+/* global $gameSystem    */
 /* global Graphics       */
 /* global Scene_Map      */
 /* global Sprite         */
 /* global TouchInput     */
 /* global Window_Base    */
 /* global Window_Message */
+/* global Game_System    */
 //=============================================================================
 // ItemSlot.js
 //=============================================================================
@@ -300,22 +302,22 @@ window.$gameItemSlot = null;
             if (!isItem(item)) return false;
 
             // プレイヤーの所有しているアイテムに選択されキーを設定する
-            if (typeof $gameParty._items.slots != 'object') return false;
-            if ($gameParty._items.slots[inputKey]) {
+            if (typeof $gameSystem._gameItemSlotData != 'object') return false;
+            if ($gameSystem._gameItemSlotData[inputKey]) {
                 // 対象スロットから取り消し
-                if ($gameParty._items.slots[inputKey].id == item.id) $gameParty._items.slots[inputKey] = null;
+                if ($gameSystem._gameItemSlotData[inputKey].id == item.id) $gameSystem._gameItemSlotData[inputKey] = null;
             } else {
                 // 既にスロットにセットされているアイテムの場合は処理を終了する
-                const keys = Object.keys($gameParty._items.slots);
+                const keys = Object.keys($gameSystem._gameItemSlotData);
                 for (let i = 0; i < keys.length; i++) {
-                    if ($gameParty._items.slots[keys[i]]) {
-                        const id = $gameParty._items.slots[keys[i]].id;
+                    if ($gameSystem._gameItemSlotData[keys[i]]) {
+                        const id = $gameSystem._gameItemSlotData[keys[i]].id;
                         if (item.id == id) return false;
                     }
                 }
 
                 // 対象スロットへセット
-                $gameParty._items.slots[inputKey] = item;
+                $gameSystem._gameItemSlotData[inputKey] = item;
             }
 
             SceneManager._scene._itemWindow.refresh();
@@ -418,10 +420,10 @@ window.$gameItemSlot = null;
             // パーティーが所有しているアイテムと個数の一覧
             const partyItems = $gameParty._items;
 
-            if(typeof $gameParty._items.slots != 'object') {
+            if (typeof $gameSystem._gameItemSlotData != 'object' || Object.keys($gameSystem._gameItemSlotData).length <= 0) {
                 // スロットの情報がない場合
-                $gameParty._items.slots = {};
-                for(let i = 0; i < this.slotCount; i++) $gameParty._items.slots[(i+1)] = null;
+                $gameSystem._gameItemSlotData = {};
+                for (let i = 0; i < this.slotCount; i++) $gameSystem._gameItemSlotData[(i+1)] = null;
 
                 // 描画
                 for (let i = 0; i < this.slotCount; i++) {
@@ -430,8 +432,7 @@ window.$gameItemSlot = null;
                 }
             } else {
                 // スロット情報がある場合
-                // パーティーが所有しているアイテム一覧からスロットに設定されたアイテム一覧を取り出す
-                let slotItems = $gameParty._items.slots;
+                let slotItems = $gameSystem._gameItemSlotData;
                 let keys = [];
                 keys = Object.keys(slotItems);
 
@@ -440,17 +441,17 @@ window.$gameItemSlot = null;
                     if (slotItems[keys[i]]) {
                         if (!$gameParty._items[slotItems[keys[i]].id]) {
                             // アイテムをすでに所有していない場合はスロットから外す
-                            $gameParty._items.slots[keys[i]] = null;
+                            $gameSystem._gameItemSlotData[keys[i]] = null;
                         }
                     }
                 }
 
                 // 更新
-                slotItems = $gameParty._items.slots;
+                slotItems = $gameSystem._gameItemSlotData;
                 keys = Object.keys(slotItems);
 
                 // スロットにアイテムを渡して描画
-                for (let i = 0; i < keys.length; i++) {
+                for (let i = 0; i < this.slotCount; i++) {
                     if (slotItems[keys[i]]) {
                         slotItems[keys[i]].haveCount = partyItems[slotItems[keys[i]].id]; // アイテムに所持数情報を追加・更新する
                         this.slots[(keys[i] - 1)].update(slotItems[keys[i]]);
@@ -541,7 +542,7 @@ window.$gameItemSlot = null;
                 slot.alpha = this.alpha;
 
                 // 選択状態生成
-                if(this.isClick) {
+                if (this.isClick) {
                     current = new PIXI.Graphics();
                     current.lineStyle(this.lineWeight, this.lineColor);
                     current.drawRoundedRect(
@@ -628,7 +629,7 @@ window.$gameItemSlot = null;
             this.buttonsX[0] = 10;
             this.buttonsY[0] = 10;
             this.colors[0]   = 0x000000;
-            for(let i = 1; i < this.slotCount; i++) {
+            for (let i = 1; i < this.slotCount; i++) {
                 this.numButtoms.push(null);
                 this.buttonsX[i] = this.buttonsX[(i - 1)] + Math.floor(this.width * 1.5);
                 this.buttonsY[i] = this.buttonsY[(i - 1)];
@@ -653,7 +654,7 @@ window.$gameItemSlot = null;
          * @return {undefined}
          */
         show() {
-            for(let i = 0; i < this.slotCount; i++) {
+            for (let i = 0; i < this.slotCount; i++) {
                 if(this.numbers[i]    != null) SceneManager._scene.removeChild(this.numbers[i]);
                 if(this.numButtoms[i] != null) SceneManager._scene.removeChild(this.numButtoms[i]);
             }
@@ -663,7 +664,7 @@ window.$gameItemSlot = null;
                 let numbers   = [];
                 let numButton = [];
 
-                for(let i = 0; i < this.slotCount; i++) {
+                for (let i = 0; i < this.slotCount; i++) {
                     // 枠生成
                     numButton[i] = new PIXI.Graphics();
                     numButton[i].lineStyle(0);
@@ -675,7 +676,7 @@ window.$gameItemSlot = null;
                     if (numButton[i] != null) this.numButtoms[i] = SceneManager._scene.addChild(numButton[i]);
                 }
 
-                for( let i = 0; i < this.slotCount; i++) {
+                for (let i = 0; i < this.slotCount; i++) {
                     numbers[i] = new PIXI.Text((i + 1), this.fontStyle);
                     numbers[i].x = Math.floor(this.buttonsX[i] + ((this.width  - numbers[i].width)  / 2));
                     numbers[i].y = Math.floor(this.buttonsY[i] + ((this.height - numbers[i].height) / 2));
@@ -710,6 +711,14 @@ window.$gameItemSlot = null;
     let itemslot  = null;
     let setButton = null;
     PluginManager.registerCommand(pluginName, 'create', function() {
+        // 競合対策
+        // スロットのデータ保存先を変えるマイグレーション処理
+        if (typeof $gameParty._items.slots == 'object') {
+            $gameSystem._gameItemSlotData = { ...$gameParty._items.slots };
+            delete $gameParty._items['slots'];
+        }
+
+        // スロット生成
         if (!itemslot) {
             itemslot = new ItemSlot(
                 slotCount
@@ -742,7 +751,7 @@ window.$gameItemSlot = null;
                 const slots = window.$gameItemSlot.slots;
                 let item  = null;
 
-                for(let i = 0; i < slots.length; i++) {
+                for (let i = 0; i < slots.length; i++) {
                     if (slots[i].isClick) item = slots[i].item;
                 }
 
@@ -752,28 +761,23 @@ window.$gameItemSlot = null;
                 return item[key];
             };
 
-            if(typeof $gameParty._items.slots == 'object') {
+            if (typeof $gameSystem._gameItemSlotData == 'object') {
                 // セーブデータ対策
                 // 過去のセーブデータよりスロット数を少ない仕様になった場合に既にセットされているアイテムを切り捨てる
-                const keys = Object.keys($gameParty._items.slots);
+                const keys = Object.keys($gameSystem._gameItemSlotData);
                 if (itemslot.slotCount < keys.length) {
                     const slots = {};
-                    for(let i = 0; i < slotCount; i++) {
-                        slots[(i+1)] = $gameParty._items.slots[(i+1)];
+                    for (let i = 0; i < slotCount; i++) {
+                        slots[(i+1)] = $gameSystem._gameItemSlotData[(i+1)];
                     }
 
                     // 入れ替え
-                    $gameParty._items.slots = slots;
+                    $gameSystem._gameItemSlotData = slots;
                 } else if (itemslot.slotCount > keys.length) {
                     // 多い場合は入れ物を追加しておく
-                    for(let i = keys.length; i < itemslot.slotCount; i++) $gameParty._items.slots[(i+1)] = null;
+                    for(let i = keys.length; i < itemslot.slotCount; i++) $gameSystem._gameItemSlotData[(i+1)] = null;
                 }
-
-                // 描画を更新
-                itemslot.update();
             }
-
-            itemSlotEnable = true;
         }
     });
 
@@ -804,6 +808,15 @@ window.$gameItemSlot = null;
     // -------------------------------------------
     // 以下はツクールMZにある機能を改造する処理群
     // -------------------------------------------
+    /**
+     * Game_Systemにスロットのデータの保存先を作成する
+     */
+    const _Game_System_initialize = Game_System.prototype.initialize;
+    Game_System.prototype.initialize = function(){
+        _Game_System_initialize.apply(this, arguments);
+        this._gameItemSlotData = {};
+    };
+
     /**
      * シーン更新時の挙動を改造する。
      * 入力判定系の処理を追加する。
@@ -842,7 +855,7 @@ window.$gameItemSlot = null;
             }
 
             // アイテムスロットを更新
-            if(itemSlotEnable) itemslot.update();
+            if (itemSlotEnable) itemslot.update();
         }
 
         // アイテム画面上の数字ボタンマウス左クリック
@@ -903,11 +916,11 @@ window.$gameItemSlot = null;
     const _Window_Base_prototype_drawItemName = Window_Base.prototype.drawItemName;
     Window_Base.prototype.drawItemName = function(item, x, y, width) {
         _Window_Base_prototype_drawItemName.apply(this, arguments);
-        if(!isItem(item)) return ;
+        if (!isItem(item)) return ;
 
-        const keys = Object.keys($gameParty._items.slots);
+        const keys = Object.keys($gameSystem._gameItemSlotData);
         for (let i = 0; i < keys.length; i++) {
-            if ($gameParty._items.slots[keys[i]] && $gameParty._items.slots[keys[i]].id == item.id) {
+            if ($gameSystem._gameItemSlotData[keys[i]] && $gameSystem._gameItemSlotData[keys[i]].id == item.id) {
                 this.contents.fontSize = itemSlotFontSize;
                 this.contents.drawText(keys[i], x, Math.floor(y + (this.contents.fontSize / 3)), width, 0, 'left');
                 this.resetFontSettings();
@@ -932,7 +945,7 @@ window.$gameItemSlot = null;
     const _Scene_Item_prototype_createItemWindow = Scene_Item.prototype.createItemWindow;
     Scene_Item.prototype.createItemWindow = function() {
         _Scene_Item_prototype_createItemWindow.apply(this, arguments);
-        if(!setButton) setButton = new SetButton(slotCount);
+        if (!setButton) setButton = new SetButton(slotCount);
         setButton.show();
     };
 
