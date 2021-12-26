@@ -676,7 +676,7 @@ window.$gameItemSlot = null;
                     if (numButton[i] != null) this.numButtoms[i] = SceneManager._scene.addChild(numButton[i]);
                 }
 
-                for ( let i = 0; i < this.slotCount; i++) {
+                for (let i = 0; i < this.slotCount; i++) {
                     numbers[i] = new PIXI.Text((i + 1), this.fontStyle);
                     numbers[i].x = Math.floor(this.buttonsX[i] + ((this.width  - numbers[i].width)  / 2));
                     numbers[i].y = Math.floor(this.buttonsY[i] + ((this.height - numbers[i].height) / 2));
@@ -714,7 +714,7 @@ window.$gameItemSlot = null;
         // 競合対策
         // スロットのデータ保存先を変えるマイグレーション処理
         if (typeof $gameParty._items.slots == 'object') {
-            $gameSystem._gameItemSlotData = {...$gameParty._items.slots };
+            $gameSystem._gameItemSlotData = { ...$gameParty._items.slots };
             delete $gameParty._items['slots'];
         }
 
