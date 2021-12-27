@@ -175,7 +175,7 @@
 // このプラグインを有効化すると追加されるため競合に注意すること
 window.$gameItemSlot = null;
 
-( function() {
+( function () {
     const pluginName = 'ItemSlot';
     const iconSet    = ImageManager.loadSystem('IconSet');
     let itemSlotEnable = false;
@@ -200,10 +200,10 @@ window.$gameItemSlot = null;
     let backgroundColor = 0x000000;
 
     // 枠の透明度
-    let backgroundAlpha = 0.3;
+    const backgroundAlpha = 0.3;
 
     // 枠の角丸の半径
-    let radius = 10;
+    const radius = 10;
 
     // 配置するアイテムスロット枠数
     let slotCount = 9;
@@ -243,7 +243,7 @@ window.$gameItemSlot = null;
     slotMarginBottom = parseInt(parameters['SlotMarginBottom']);
 
     if (parameters['VerticalAlign'] == 'TOP') verticalAlign = SLOT_VERTICAL_ALIGN.TOP;
-    else if(parameters['VerticalAlign'] == 'BOTTOM') verticalAlign = SLOT_VERTICAL_ALIGN.BOTTOM;
+    else if (parameters['VerticalAlign'] == 'BOTTOM') verticalAlign = SLOT_VERTICAL_ALIGN.BOTTOM;
     else verticalAlign = SLOT_VERTICAL_ALIGN.BOTTOM;
 
     slotFontSize     = parseInt(parameters['SlotFontSize']);
@@ -330,7 +330,7 @@ window.$gameItemSlot = null;
      * アイテムスロットクラス。
      */
     class ItemSlot {
-        constructor(
+        constructor (
             _slotCount
             , _slotMarginLeft
             , _slotMarginRight
@@ -475,7 +475,7 @@ window.$gameItemSlot = null;
      * スロットクラス
      */
     class Slot {
-        constructor(
+        constructor (
             id
             , x
             , y
@@ -519,7 +519,7 @@ window.$gameItemSlot = null;
          * スロットを描画する。
          * @return {undefined}
          */
-        show() {
+        show () {
             if (this.number  != null) SceneManager._scene.removeChild(this.number);
             if (this.slot    != null) SceneManager._scene.removeChild(this.slot);
             if (this.icon    != null) SceneManager._scene.removeChild(this.icon);
@@ -594,7 +594,7 @@ window.$gameItemSlot = null;
          * @param {object} item 表示するアイテム
          * @return {undefined}
          */
-        update(item) {
+        update (item) {
             this.item = item;
             this.show();
         }
@@ -603,7 +603,7 @@ window.$gameItemSlot = null;
          * スロットを非表示にする。
          * @return {undefined}
          */
-        hide() {
+        hide () {
             if (this.number  != null) SceneManager._scene.removeChild(this.number);
             if (this.slot    != null) SceneManager._scene.removeChild(this.slot);
             if (this.icon    != null) SceneManager._scene.removeChild(this.icon);
@@ -616,7 +616,7 @@ window.$gameItemSlot = null;
      * アイテムセット用ボタンクラス。
      */
     class SetButton {
-        constructor(_slotCount) {
+        constructor (_slotCount) {
             this.width  = ImageManager.iconWidth;
             this.height = ImageManager.iconHeight;
             this.slotCount = _slotCount;
@@ -653,16 +653,16 @@ window.$gameItemSlot = null;
          * 数値ボタンを表示する。
          * @return {undefined}
          */
-        show() {
+        show () {
             for (let i = 0; i < this.slotCount; i++) {
-                if(this.numbers[i]    != null) SceneManager._scene.removeChild(this.numbers[i]);
-                if(this.numButtoms[i] != null) SceneManager._scene.removeChild(this.numButtoms[i]);
+                if (this.numbers[i]    != null) SceneManager._scene.removeChild(this.numbers[i]);
+                if (this.numButtoms[i] != null) SceneManager._scene.removeChild(this.numButtoms[i]);
             }
 
             // アイテム画面でのみ描画
-            if(SceneManager._scene instanceof Scene_Item) {
-                let numbers   = [];
-                let numButton = [];
+            if (SceneManager._scene instanceof Scene_Item) {
+                const numbers   = [];
+                const numButton = [];
 
                 for (let i = 0; i < this.slotCount; i++) {
                     // 枠生成
@@ -692,7 +692,7 @@ window.$gameItemSlot = null;
          * @param {integer} color 変更する色
          * @return {undefined}
          */
-        update(index, color) {
+        update (index, color) {
             const tempColor = this.color;
             this.colors[index] = color;
             // 描画
@@ -710,7 +710,7 @@ window.$gameItemSlot = null;
      */
     let itemslot  = null;
     let setButton = null;
-    PluginManager.registerCommand(pluginName, 'create', function() {
+    PluginManager.registerCommand(pluginName, 'create', function () {
         // 競合対策
         // スロットのデータ保存先を変えるマイグレーション処理
         if (typeof $gameParty._items.slots == 'object') {
@@ -775,7 +775,7 @@ window.$gameItemSlot = null;
                     $gameSystem._gameItemSlotData = slots;
                 } else if (itemslot.slotCount > keys.length) {
                     // 多い場合は入れ物を追加しておく
-                    for(let i = keys.length; i < itemslot.slotCount; i++) $gameSystem._gameItemSlotData[(i+1)] = null;
+                    for (let i = keys.length; i < itemslot.slotCount; i++) $gameSystem._gameItemSlotData[(i+1)] = null;
                 }
             }
         }
@@ -784,7 +784,7 @@ window.$gameItemSlot = null;
     /**
      * アイテムスロット表示。
      */
-    PluginManager.registerCommand(pluginName, 'show', function() {
+    PluginManager.registerCommand(pluginName, 'show', function () {
         if (itemslot) itemslot.show();
         itemSlotEnable = true;
     });
@@ -792,7 +792,7 @@ window.$gameItemSlot = null;
     /**
      * アイテムスロット更新。
      */
-    PluginManager.registerCommand(pluginName, 'update', function() {
+    PluginManager.registerCommand(pluginName, 'update', function () {
         if (itemslot) itemslot.update();
         itemSlotEnable = true;
     });
@@ -800,7 +800,7 @@ window.$gameItemSlot = null;
     /**
      * アイテムスロット非表示。
      */
-    PluginManager.registerCommand(pluginName, 'hide', function() {
+    PluginManager.registerCommand(pluginName, 'hide', function () {
         if (itemslot) itemslot.hide();
         itemSlotEnable = false;
     });
@@ -812,7 +812,7 @@ window.$gameItemSlot = null;
      * Game_Systemにスロットのデータの保存先を作成する
      */
     const _Game_System_initialize = Game_System.prototype.initialize;
-    Game_System.prototype.initialize = function(){
+    Game_System.prototype.initialize = function () {
         _Game_System_initialize.apply(this, arguments);
         this._gameItemSlotData = {};
     };
@@ -822,7 +822,7 @@ window.$gameItemSlot = null;
      * 入力判定系の処理を追加する。
      */
     const _SceneManager_updateMain = SceneManager.updateMain;
-    SceneManager.updateMain = function() {
+    SceneManager.updateMain = function () {
         _SceneManager_updateMain.apply(this, arguments);
 
         // アイテム画面からスロットセット処理
@@ -886,7 +886,7 @@ window.$gameItemSlot = null;
      * スロットをクリックされた場合は移動させない。
      */
     const _Scene_Map_prototype_onMapTouch = Scene_Map.prototype.onMapTouch;
-    Scene_Map.prototype.onMapTouch = function() {
+    Scene_Map.prototype.onMapTouch = function () {
         if (itemslot) {
             const clickX = TouchInput.x;
             const clickY = TouchInput.y;
@@ -914,7 +914,7 @@ window.$gameItemSlot = null;
      * セットしているスロットIDをアイテム名描画部分に追記する。
      */
     const _Window_Base_prototype_drawItemName = Window_Base.prototype.drawItemName;
-    Window_Base.prototype.drawItemName = function(item, x, y, width) {
+    Window_Base.prototype.drawItemName = function (item, x, y, width) {
         _Window_Base_prototype_drawItemName.apply(this, arguments);
         if (!isItem(item)) return ;
 
@@ -933,7 +933,7 @@ window.$gameItemSlot = null;
      * マップシーン開始時にアイテムスロットも更新する。
      */
     const _Scene_Map_prototype_start = Scene_Map.prototype.start;
-    Scene_Map.prototype.start = function() {
+    Scene_Map.prototype.start = function () {
         _Scene_Map_prototype_start.apply(this, arguments);
         if (itemSlotEnable && itemslot) itemslot.update();
     };
@@ -943,7 +943,7 @@ window.$gameItemSlot = null;
      * スロットセット用の数値ボタンを描画する。
      */
     const _Scene_Item_prototype_createItemWindow = Scene_Item.prototype.createItemWindow;
-    Scene_Item.prototype.createItemWindow = function() {
+    Scene_Item.prototype.createItemWindow = function () {
         _Scene_Item_prototype_createItemWindow.apply(this, arguments);
         if (!setButton) setButton = new SetButton(slotCount);
         setButton.show();
@@ -954,7 +954,7 @@ window.$gameItemSlot = null;
      * メッセージウィンドウ表示時はアイテムスロットは表示しない。
      */
     const _Window_Message_prototype_startMessage = Window_Message.prototype.startMessage;
-    Window_Message.prototype.startMessage = function() {
+    Window_Message.prototype.startMessage = function () {
         _Window_Message_prototype_startMessage.apply(this, arguments);
         if (
             SceneManager._scene instanceof Scene_Map
@@ -969,7 +969,7 @@ window.$gameItemSlot = null;
      * メッセージウィンドウ終了時はアイテムスロットは表示する。
      */
     const _Window_Message_prototype_terminateMessage = Window_Message.prototype.terminateMessage;
-    Window_Message.prototype.terminateMessage = function() {
+    Window_Message.prototype.terminateMessage = function () {
         _Window_Message_prototype_terminateMessage.apply(this, arguments);
         if (
             SceneManager._scene instanceof Scene_Map
