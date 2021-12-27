@@ -25,6 +25,33 @@
         "semi": [
             "error",
             "always"
+        ],
+        "keyword-spacing": [
+            "error",
+            {
+                "before": true,
+                "after": true
+            }
+        ],
+        "space-before-function-paren": [
+            "error"
+        ],
+        "prefer-const": [
+            "error"
+        ],
+        "space-before-blocks": [
+            "error"
+        ],
+        "function-call-argument-newline": [
+            "error",
+            "consistent"
+        ],
+        "operator-linebreak": [
+            "error",
+            "before"
+        ],
+        "valid-jsdoc": [
+            "error"
         ]
     }
 }
