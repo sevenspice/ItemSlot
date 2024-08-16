@@ -4,17 +4,6 @@ RPGツクールMZ用のプラグイン。
 
 マップにアイテムスロットを表示する。
 
-# プロジェクトへのインポート方法
-
-1. プラグインをダウンロードする。以下のリンクをクリックすると最新のバイナリを落とせる。
-    * [ItemSlot-1.1.0](https://github-storage.redspice.me/rpgmaker-mz/itemslot/ItemSlot-1.1.0.zip)
-
-3. ダウンロードしたZIPファイルを展開する。
-
-2. ItemSlot.jsをRPGツクールMZのプロジェクトのプラグインフォルダにコピーする。
-
-3. エディタのプラグイン管理からItemSlotを読み込んでONにする。
-
 # 仕様
 
 * 所有しているアイテムをマップに表示する。
@@ -101,7 +90,7 @@ window.$gameItemSlot.currentItem(key)
 
 プラグインが動作しているデモを以下のGIFで示す。
 
-<img src="https://github-storage.redspice.me/rpgmaker-mz/itemslot/itemslot.gif?raw=true">
+![rpgmaker-mz_itemslot_itemslot](https://github.com/user-attachments/assets/a7476c17-6081-42b5-ba7e-5304a179c6f8)
 
 # 備考
 
